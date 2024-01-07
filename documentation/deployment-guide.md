@@ -11,18 +11,18 @@
 ### Fork and Clone [_generative-ai-amazon-bedrock-langchain-agent-example_](https://github.com/aws-samples/generative-ai-amazon-bedrock-langchain-agent-example) Repository
 The AWS Amplify configuration points to a GitHub source repository from which our website's frontend is built. To control the source code that builds your Amplify website, follow [GitHub's instructions](https://docs.github.com/en/get-started/quickstart/fork-a-repo?tool=webui&platform=mac) to fork this _generative-ai-amazon-bedrock-langchain-agent-example_ repository. This creates a copy of the repository that is disconnected from the original codebase, so you can make the appropriate modifications.
 
-❗ Take note of your forked repository URL as you will use it to clone the repository in the next step and to configure the _GITHUB_PAT_ environment variable used in the [Deployment Automation Script](#deployment).
-
-Clone the _generative-ai-amazon-bedrock-langchain-agent-example_ repository:
+1. Clone the _generative-ai-amazon-bedrock-langchain-agent-example_ repository:
 
 ```sh
 git clone https://github.com/aws-samples/generative-ai-amazon-bedrock-langchain-agent-example
 ```
 
+❗ Take note of your forked repository URL as you will use it to clone the repository in the next step and to configure the _GITHUB_PAT_ environment variable used in the [Deployment Automation Script](#deployment).
+
 ### Create GitHub Personal Access Token (PAT)
 The Amplify hosted website uses a GitHub PAT as the OAuth token for third-party source control. The OAuth token is used to create a webhook and a read-only deploy key using SSH cloning.
 
-To create your PAT, please follow the GitHub instructions for [creating a personal access token (classic)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic). You may prefer to use a [GitHub App](https://docs.github.com/en/apps/creating-github-apps/creating-github-apps/about-apps) to access resources on behalf of an organization or for long-lived integrations. 
+2. To create your PAT, please follow the GitHub instructions for [creating a personal access token (classic)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic). You may prefer to use a [GitHub App](https://docs.github.com/en/apps/creating-github-apps/creating-github-apps/about-apps) to access resources on behalf of an organization or for long-lived integrations. 
 
 ❗ Take note of your PAT before closing your browser as you will use it to configure the _GITHUB_PAT_ environment variable used in the [Deployment Automation Script](deployment-automation-script). The script will publish your PAT to AWS Secrets Manager using AWS CLI commands and the secret name will be used as the _GitHubToken_ CloudFormation parameter.
 
@@ -43,27 +43,27 @@ cfn_nag_scan --input-path cfn/GenAI-FSI-Agent.yml
 ## Deployment 
 The [create-stack.sh](../shell/create-stack.sh) shell script allows for automated solution provisioning through a parameterized CloudFormation template, [GenAI-FSI-Agent.yml](../cfn/GenAI-FSI-Agent.yml), which includes the following resources:
 
-1. AWS Amplify website to simulate customer's frontend environment.
-2. Amazon Lex bot configured through a bot import deployment package.
-3. Four Amazon DynamoDB tables:
+- AWS Amplify website to simulate customer's frontend environment.
+- Amazon Lex bot configured through a bot import deployment package.
+- Four Amazon DynamoDB tables:
 	- _UserPendingAccountsTable_: Records pending transactions (e.g., loan applications).
 	- _UserExistingAccountsTable_: Contains user account information (e.g., mortgage account summary).
 	- _ConversationIndexTable_: Tracks conversation state.
 	- _ConversationTable_: Stores conversation history.
-4. Amazon S3 bucket that contains AWS Lambda Handler, Lambda Data Loader, and Lex deployment packages, along with Customer FAQ and Mortgage Application example documents.
-5. Two Lambda functions:
+ - Amazon S3 bucket that contains AWS Lambda Handler, Lambda Data Loader, and Lex deployment packages, along with Customer FAQ and Mortgage Application example documents.
+ - Two Lambda functions:
 	- Agent Handler: Contains the LangChain Conversational Agent logic that can intelligently employ a variety of tools based on user input.
 	- Data Loader: Loads example customer account data into _UserExistingAccountsTable_ and is invoked as a custom CloudFormation resource during stack creation.
-6. AWS Lambda layer built from [requirements.txt](../agent/lambda-layers/requirements.txt). Supplies LangChain's LLM library with an Amazon Bedrock hosted model as the underlying LLM. Also serves PyPDF as an open-source PDF library for creating and modifying PDF files.
-7. Amazon Kendra Index: Provides a searchable index of customer proprietary information, including documents, FAQs, knowledge bases, manuals, websites, and more.
-8. Two Kendra Data Sources:
+ - AWS Lambda layer built from [requirements.txt](../agent/lambda-layers/requirements.txt). Supplies LangChain's LLM library with an Amazon Bedrock provided model as the underlying LLM. Also serves PyPDF as an open-source PDF library for creating and modifying PDF files.
+ - Amazon Kendra Index: Provides a searchable index of customer proprietary information, including documents, FAQs, knowledge bases, manuals, websites, and more.
+ - Two Kendra Data Sources:
 	- S3: Hosts an example customer [FAQ document](../agent/assets/Octank-Financial-FAQs.csv).
 	- Web Crawler: Configured with a root domain that emulates the customer-specific website.
-9. AWS Identity and Access Management (IAM) permissions for the above resources.
+ - AWS Identity and Access Management (IAM) permissions for the above resources.
 
 CloudFormation prepopulates stack parameters with the default values provided in the template. To provide alternative input values, you can specify parameters as environment variables that are referenced in the `ParameterKey=<ParameterKey>,ParameterValue=<Value>` pairs in the below shell script's `aws cloudformation create-stack` command. 
 
-Before executing the shell script, navigate to your forked version of the _generative-ai-amazon-bedrock-langchain-agent-example_ repository as your working directory and modify the shell script permissions to executable:
+3. Before executing the shell script, navigate to your forked version of the _generative-ai-amazon-bedrock-langchain-agent-example_ repository as your working directory and modify the shell script permissions to executable:
 
 ```sh
 # If not already forked, fork the remote repository (https://github.com/aws-samples/generative-ai-amazon-bedrock-langchain-agent-example) and change working directory to shell folder:
@@ -71,7 +71,7 @@ cd generative-ai-amazon-bedrock-langchain-agent-example/shell/
 chmod u+x create-stack.sh
 ```
 
-Next, set your Amplify Repository and GitHub PAT environment variables created during the pre-deployment steps:
+4. Next, set your Amplify Repository and GitHub PAT environment variables created during the pre-deployment steps:
 
 ```sh
 export AMPLIFY_REPOSITORY=<YOUR-FORKED-REPOSITORY-URL> # Forked repository URL from Pre-Deployment (Exclude '.git' from repository URL)
@@ -80,7 +80,7 @@ export STACK_NAME=<YOUR-STACK-NAME> # Stack name must be lower case for S3 bucke
 export KENDRA_WEBCRAWLER_URL=<YOUR-WEBSITE-ROOT-DOMAIN> # Public or internal HTTPS website for Kendra to index via Web Crawler (e.g., https://www.investopedia.com/) - Please see https://docs.aws.amazon.com/kendra/latest/dg/data-source-web-crawler.html
 ```
 
-Finally, execute the shell script to deploy the [GenAI-FSI-Agent.yml](../cfn/GenAI-FSI-Agent.yml) CloudFormation stack.
+5. Finally, execute the shell script to deploy the [GenAI-FSI-Agent.yml](../cfn/GenAI-FSI-Agent.yml) CloudFormation stack:
 
 ```sh
 source ./create-stack.sh
@@ -173,33 +173,43 @@ aws amplify start-job --app-id $AMPLIFY_APP_ID --branch-name $AMPLIFY_BRANCH --j
 
 ## Post-Deployment
 
-### Deploy Web UI for Your Agent
-The [Amazon Lex Web UI](https://aws.amazon.com/blogs/machine-learning/deploy-a-web-ui-for-your-chatbot/), also known as the chatbot UI, allows you to quickly provision a comprehensive web client for Amazon Lex chatbots. The Lex Web UI integrates with Amazon Lex to produce a JavaScript plugin that will incorporate a Lex-powered chat widget into your existing web application. In this case, we use the Lex Web UI to emulate an existing customer web application with an embedded Lex chatbot.
+### Integrate Amazon Lex with Kommunicate
+[Kommunicate](https://docs.kommunicate.io/) integrates with Amazon Lex to produce a JavaScript plugin that will embed a Lex-powered chat widget within the solution's Amplify website. Kommunicate only requires _AmazonLexReadOnly_ and _AmazonLexRunBotsOnly_ permissions. If you prefer not to use a third-party, the [Amazon Lex Web UI](https://aws.amazon.com/blogs/machine-learning/deploy-a-web-ui-for-your-chatbot/) can also be used to quickly provision a basic web client for Amazon Lex chatbots, although it is less feature rich.
 
-1.  Follow the instructions to [deploy the Lex Web UI CloudFormation Stack](https://github.com/aws-samples/aws-lex-web-ui/tree/master#getting-started).
+❗ Kommunicate end user information usage: End users are defined as individuals who interact with the Lex chatbot through the Web channel. End user prompts are proxied through Kommunicate and sent to the Lex chatbot. End users may submit information such as personal information including names, email addresses, and phone numbers in the chat or connected email. Kommunicate only stores chat history and other information provided by end users for the sole purpose of displaying analytics and generating reports within the Kommunicate console, which is protected by username/password or SAML login credentials. Kommunicate does not expose the personal information of end users to any 3rd party. Please refer to [Kommunicate's privacy policy](https://www.kommunicate.io/privacy-policy) for additional information.
 
-2.  Navigate to the CloudFormation outputs tab and select the _SnippetUrl_:
- 
+6. Follow the instructions for [Kommunicate's Amazon Lex bot integration](https://docs.kommunicate.io/docs/bot-lex-integration):
+
 <p align="center">
-  <img src="../design/cfn-outputs-snippet-url.png">
+  <img src="../design/Kommunicate-lex.png">
 </p>
 
-3.  Copy the Lex Web UI IFrame Snippet, which will resemble the format you under Adding the ChatBot UI to your Website as an IFrame.
- 
+7. Then copy the [JavaScript plugin](https://dashboard.kommunicate.io/settings/install) generated by Kommunicate:
+
 <p align="center">
-  <img src="../design/lex-web-ui-iframe-snippet.png">
+  <img src="../design/Kommunicate.png">
 </p>
 
-4.  Edit your forked version of the Amplify GitHub source repository by adding your Lex Web UI JavaScript plugin to the section labeled <-- Paste your Lex Web UI JavaScript plugin here --> for each of the HTML files under the [frontend directory](../frontend/): index.html, contact.html, about.html.
+8. Edit your forked version of the Amplify GitHub source repository by adding your Kommunicate JavaScript plugin to the section labeled '_<-- Paste your Kommunicate JavaScript plugin here -->_' for each of the HTML files under the [frontend directory](../frontend/): _index.html, contact.html, about.html_:
 
-<p align="center">
-  <img src="../design/lex-web-ui-snippet-frontend.png">
+<p align="left">
+  <img src="../design/Kommunicate-plugin.svg">
 </p>
 
 Amplify provides an automated build and release pipeline that triggers based on new commits to your forked repository and publishes the new version of your website to your Amplify domain. You can view the deployment status in the [AWS Amplify Console](https://us-east-1.console.aws.amazon.com/amplify/home?region=us-east-1#/).
 
-<p align="center">
+<p align="left">
   <img src="../design/amplify-deployment.png">
+</p>
+
+You can customize your chat widget styling and greeting message in the [Kommunicate console](https://dashboard.kommunicate.io/settings/chat-widget-customization#chat-widget-styling).
+
+<p align="left">
+  <img src="../design/Kommunicate-chat-widget.png">
+</p>
+
+<p align="left">
+  <img src="../design/Kommunicate-greeting.png" height="75%" width="75%">
 </p>
 
 ### Launch Amplify Website
@@ -211,7 +221,7 @@ aws cloudformation describe-stacks \
     --query 'Stacks[0].Outputs[?OutputKey==`AmplifyDemoWebsite`].OutputValue' --output text
 ```
 
-Access your Amplify domain URL and continue to [Testing and Validation](../documentation/testing-and-validation.md).
+9. Access your Amplify domain URL and continue to [Testing and Validation](../documentation/testing-and-validation.md):
 
 <p align="center">
   <img src="../design/amplify-website.png">
